@@ -18,8 +18,10 @@ Ext.define("CArABU.app.IterMet", {
 
     launch: function() {
         var me = this;
+        var exportRecords = [];
+        var gridRecords = [];
+
         this.logger.setSaveForLater(this.getSetting('saveLog'));
-//        this.setLoading("Loading stuff...");
 
         this.down('#selector_box').add({
             xtype: 'rallydatefield',
@@ -30,8 +32,6 @@ Ext.define("CArABU.app.IterMet", {
             width: 275,
             labelSeparator: '',
             margin: '10 10 10 10',
-//            defaultAlign: 'right',
-//            name: 'end_date',
         });
 
         this.down('#selector_box').add({
@@ -56,11 +56,11 @@ Ext.define("CArABU.app.IterMet", {
             }
         });
 
-//        this._getValidProjects();
     },
 
     _getValidProjects: function() {
         var me = this;
+        this.setLoading("Loading Projects...");
 
         var project_config = {
             model: 'Project',
@@ -74,22 +74,18 @@ Ext.define("CArABU.app.IterMet", {
         me._loadWsapiRecords(project_config).then({
               scope: this,
               success: function(projects) {
-//me.logger.log("P Fetched:",projects);
-
-//              Ext.Array.each(projects, function(project) {
                 me._getIterations(projects);
-            },
-
-//me.logger.log("iterations:",iterations);
-                failure: function(msg) {
-                    Ext.Msg.alert('',msg);
-                },
-                scope: this
-            }).always(function(){ me.setLoading(false);})
-
+              },
+              failure: function(msg) {
+                Ext.Msg.alert('',msg);
+              },
+              scope: this
+              }).always(function(){ me.setLoading(false);})
     },
 
     _getIterations: function(projects) {
+        this.setLoading("Loading Iterations...");
+
         var me = this;
         var promises = [];
         var records = [];
@@ -105,8 +101,18 @@ Ext.define("CArABU.app.IterMet", {
             records.push(record);
             records = Ext.Array.flatten(records);
 
-//me.logger.log("records:",records);
-        var fields = ['Team Name','Last Iteration','Iteration -1','Iteration -2','Iteration -3','Iteration -4','Iteration -5'];
+me.logger.log("iteration get records:",records);
+//                var fields = ['Team Name','Last Iteration Say','Iteration -1 Say','Iteration -2 Say','Iteration -3 Say','Iteration -4 Say','Iteration -5 Say'];
+//                me._displayGridGivenRecords(records,fields);
+        var fields = [
+            'Team Name',
+            'Last Iteration Say/Do',
+            'Iteration -1 Say/Do',
+            'Iteration -2 Say/Do',
+            'Iteration -3 Say/Do',
+            'Iteration -4 Say/Do',
+            'Iteration -5 Say/Do'
+            ];
         me._displayGridGivenRecords(records,fields);
 
           },
@@ -114,14 +120,16 @@ Ext.define("CArABU.app.IterMet", {
               alert(error_message);
           }
         });
+//me.logger.log("erecord",exportRecords);
+//me.logger.log("grecord",gridRecords);
     },
 
     _getIterationsforProject: function(project) {
       var deferred = Ext.create("Deft.Deferred");
       var me = this;
       var endDate = Rally.util.DateTime.toIsoString(Rally.util.DateTime.add(this.down('#end_date').getValue(),'day',1),true);
-
-me.logger.log("end date:",endDate);
+      this.endDate = endDate;
+//me.logger.log("end date:",endDate);
 //me.logger.log("project:",project.data.Name);
 
       var iteration_config = {
@@ -132,7 +140,7 @@ me.logger.log("end date:",endDate);
                 'StartDate',
                 'EndDate',
                 'PlanEstimate',
-                'Project'
+                'Project',
                 ],
             filters: [
               {property:'EndDate', operator: '<=', value: endDate},
@@ -152,78 +160,100 @@ me.logger.log("end date:",endDate);
 
               scope: this,
               success: function(iterations) {
-                var record = {};
+                var promises = [];
+                var iterAccept = [];
+                var drecord = {};
+
                 var numgot = iterations.length;
-                if (numgot == 0) {record = {};}
 
-                record = {
-                    "Team Name": iterations[0].data.Project.Name,
-                    "Last Iteration": iterations[0].data.PlanEstimate,
-                };
-                for (var i = 1;  i < numgot; i++) {
-                    record["Iteration -" + i] = iterations[i].data.PlanEstimate;
-                }
+                if (numgot == 0) {drecord = {};}
 
-me.logger.log("record",record);
+                Ext.Array.each(iterations, function(iteration) {
+                      promises.push(function() {
+                        return me._getIterationFlow(iteration);
+                      });
+                });
+                Deft.Chain.sequence(promises, this).then ({
+                    success: function(record) {
 
-                deferred.resolve(record);
-//                me._getIterationFlow(iteration);
-                },
+                    iterAccept.push(record);
+                    iterAccept = Ext.Array.flatten(iterAccept);
+
+                    drecord = {
+                        "Team Name": iterations[0].data.Project.Name,
+                        "Last Iteration Say": iterations[0].data.PlanEstimate,
+                        "Last Iteration Do": iterAccept[0].data.CardEstimateTotal,
+                        "Last Iteration Say/Do":  iterations[0].data.PlanEstimate > 0 ? Math.round((iterAccept[0].data.CardEstimateTotal/iterations[0].data.PlanEstimate)*100) + "%" : "N/A",
+                    };
+                    for (var i = 1;  i < numgot; i++) {
+                        drecord["Iteration -" + i + " Say"] = iterations[i].data.PlanEstimate;
+                        drecord["Iteration -" + i + " Do"] = iterAccept[i].data.CardEstimateTotal;
+                        drecord["Iteration -" + i + " Say/Do"] = iterations[i].data.PlanEstimate > 0 ? Math.round((iterAccept[i].data.CardEstimateTotal/iterations[i].data.PlanEstimate)*100) + "%" : "N/A";
+                    }
+
+                deferred.resolve(drecord);
+//me.logger.log("iteration flow records:",iterAccept);
+//me.logger.log("record",drecord);
+//            me.exportRecords.push(drecord);
+//            me.gridRecords.push(drecord);
+
+                  },
+                  failure: function(error_message){
+                      alert(error_message);
+                  }
+                });
+
+              },
 
               failure: function(error_message){
                   deferred.reject(error_message);
               }
               }).always(function() {
               });
+//            me.exportRecords.push(drecord);
+//            me.gridRecords.push(drecord);
 
       return deferred.promise;
     },
 
-    _getIterationFlow: function() {
+    _getIterationFlow: function(iteration) {
+      this.setLoading("Loading Acceptance...");
       var me = this;
       var deferred = Ext.create("Deft.Deferred");
-me.logger.log("GIFP:");
+
       var iteration_config = {
             model: 'IterationCumulativeFlowData',
             fetch: [
-                'Name',
-                'ObjectID',
-                'StartDate',
-                'EndDate',
-                'PlanEstimate',
-                'PlannedVelocity',
-                'Project',
-                'c_IncludeinMonthlyReport'
+                'IterationObjectID',
+                'CardState',
+                'CardEstimateTotal',
+                'CreationDate',
                 ],
             filters: [
-              {property:'EndDate', operator: '<=', value: '2017-11-30'},
-//              {property:'Project.c_IncludeinMonthlyReport', operator: '=', value: true}
+              {property:'IterationObjectID', operator: '=', value: iteration.data.ObjectID},
+              {property:'CardState', operator: '=', value: 'Accepted'},
             ],
-            limit: 6,
-            pageSize: 6,
+            limit: 1,
+            pageSize: 1,
             sorters: [
-//                {property:'Project.Name', direction:'ASC'},
-                {property:'EndDate', direction:'DESC'}
+                {property:'CreationDate', direction:'DESC'}
                 ],
-            context: {
-//                project: 'https://us1.rallydev.com/slm/webservice/v2.0/project/20150591812',
-//                projectScopeUp: false,
-//                projectScopeDown: true
-            }
         };
 
         me._loadWsapiRecords(iteration_config).then({
               scope: this,
-              success: function(iterations) {
-                deferred.resolve(me._getIterationFlow(iterations));
+              success: function(record) {
+
+              deferred.resolve(record);
               },
               failure: function(error_message){
                   alert(error_message);
               }
               }).always(function() {
               });
-
+      return deferred.promise;
     },
+
     _loadWsapiRecords: function(config) {
         var deferred = Ext.create('Deft.Deferred');
         var me = this;
@@ -241,6 +271,8 @@ me.logger.log("GIFP:");
         return deferred.promise;
     },
 
+    _processRecords: function() {
+    },
 
     _displayGridGivenStore: function(store,field_names){
         this.down('#grid_box1').add({
@@ -265,15 +297,17 @@ me.logger.log("columns",cols);
         this.down('#grid_box1').add({
             xtype: 'rallygrid',
             store: store,
-            columnCfgs: cols
+            columnCfgs: cols,
+            showRowActionsColumn: false,
+            columnLines: true
         });
     },
 
     _export: function(){
-//        var file_util = Ext.create('Rally.technicalservices.FileUtilities',{});
+        var file_util = Ext.create('Rally.technicalservices.FileUtilities',{});
 //        var csv = file_util.convertDataArrayToCSVText(this.gridRows, this.export_columns);
-//        var export_file_name = this.getContext().getProject().Name + "_" + this.start_rls.getRecord().get('Name') + "_" + this.end_rls.getRecord().get('Name') + ".csv"
-//        file_util.saveCSVToFile(csv, export_file_name);
+        var export_file_name = "Iteration Metrics - " + this.endDate + ".csv"
+        file_util.saveCSVToFile(csv, export_file_name);
     },
 
     getSettingsFields: function() {
