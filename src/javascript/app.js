@@ -18,8 +18,8 @@ Ext.define("CArABU.app.IterMet", {
 
     launch: function() {
         var me = this;
-        var exportRecords = [];
-        var gridRecords = [];
+        var export_columns = [];
+        var gridRows = [];
 
         this.logger.setSaveForLater(this.getSetting('saveLog'));
 
@@ -101,7 +101,7 @@ Ext.define("CArABU.app.IterMet", {
             records.push(record);
             records = Ext.Array.flatten(records);
 
-me.logger.log("iteration get records:",records);
+//me.logger.log("iteration get records:",records);
 //                var fields = ['Team Name','Last Iteration Say','Iteration -1 Say','Iteration -2 Say','Iteration -3 Say','Iteration -4 Say','Iteration -5 Say'];
 //                me._displayGridGivenRecords(records,fields);
         var fields = [
@@ -113,6 +113,7 @@ me.logger.log("iteration get records:",records);
             'Iteration -4 Say/Do',
             'Iteration -5 Say/Do'
             ];
+
         me._displayGridGivenRecords(records,fields);
 
           },
@@ -120,8 +121,6 @@ me.logger.log("iteration get records:",records);
               alert(error_message);
           }
         });
-//me.logger.log("erecord",exportRecords);
-//me.logger.log("grecord",gridRecords);
     },
 
     _getIterationsforProject: function(project) {
@@ -217,7 +216,7 @@ me.logger.log("iteration get records:",records);
     },
 
     _getIterationFlow: function(iteration) {
-      this.setLoading("Loading Acceptance...");
+      this.setLoading("Gathering and Calculating...");
       var me = this;
       var deferred = Ext.create("Deft.Deferred");
 
@@ -289,11 +288,32 @@ me.logger.log("iteration get records:",records);
         var store = Ext.create('Rally.data.custom.Store',{
             data: records
         });
-me.logger.log("records",records);
+//me.logger.log("records",records);
         var cols = Ext.Array.map(field_names, function(name){
             return { dataIndex: name, text: name, flex: 1 };
         });
-me.logger.log("columns",cols);
+        var export_cols = {
+             'Team Name':'Team Name',
+             'Last Iteration Say': 'Last Iteration Say',
+             'Last Iteration Do': 'Last Iteration Do',
+             'Iteration -1 Say': 'Iteration -1 Say',
+             'Iteration -1 Do': 'Iteration -1 Do',
+             'Iteration -2 Say': 'Iteration -2 Say',
+             'Iteration -2 Do': 'Iteration -2 Do',
+             'Iteration -3 Say': 'Iteration -3 Say',
+             'Iteration -3 Do': 'Iteration -3 Do',
+             'Iteration -4 Say': 'Iteration -4 Say',
+             'Iteration -4 Do': 'Iteration -4 Do',
+             'Iteration -5 Say': 'Iteration -5 Say',
+             'Iteration -5 Do': 'Iteration -5 Do'
+        };
+        this.export_columns = export_cols;
+        this.gridRows = records;
+
+me.logger.log("erecord",this.export_columns);
+me.logger.log("grecord",this.gridRows);
+
+//me.logger.log("columns",cols);
         this.down('#grid_box1').add({
             xtype: 'rallygrid',
             store: store,
@@ -304,8 +324,10 @@ me.logger.log("columns",cols);
     },
 
     _export: function(){
+this.logger.log("erecord2",this.export_columns);
+this.logger.log("grecord2",this.gridRows);
         var file_util = Ext.create('Rally.technicalservices.FileUtilities',{});
-//        var csv = file_util.convertDataArrayToCSVText(this.gridRows, this.export_columns);
+        var csv = file_util.convertDataArrayToCSVText(this.gridRows, this.export_columns);
         var export_file_name = "Iteration Metrics - " + this.endDate + ".csv"
         file_util.saveCSVToFile(csv, export_file_name);
     },
