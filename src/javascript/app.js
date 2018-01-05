@@ -60,7 +60,7 @@ Ext.define("CArABU.app.IterMet", {
 
     _getValidProjects: function() {
         var me = this;
-me.logger.log("getValidProjects");
+//me.logger.log("getValidProjects");
         this.setLoading("Loading Projects...");
 
         var project_config = {
@@ -91,7 +91,7 @@ me.logger.log("getValidProjects");
         var promises = [];
         var records = [];
 
-me.logger.log("getIterations");
+//me.logger.log("getIterations");
         Ext.Array.each(projects, function(project) {
           promises.push(function() {
             return me._getIterationsforProject(project);
@@ -103,9 +103,7 @@ me.logger.log("getIterations");
             records.push(record);
             records = Ext.Array.flatten(records);
 
-me.logger.log("iteration get records:",records);
-//                var fields = ['Team Name','Last Iteration Say','Iteration -1 Say','Iteration -2 Say','Iteration -3 Say','Iteration -4 Say','Iteration -5 Say'];
-//                me._displayGridGivenRecords(records,fields);
+//me.logger.log("iteration get records:",records);
         var fields = [
             'Team Name',
             'Last Iteration Say/Do',
@@ -130,9 +128,9 @@ me.logger.log("iteration get records:",records);
       var me = this;
       var endDate = Rally.util.DateTime.toIsoString(Rally.util.DateTime.add(this.down('#end_date').getValue(),'day',1),true);
       this.endDate = endDate;
-me.logger.log("getIterationsforProject");
-me.logger.log("end date:",endDate);
-me.logger.log("project:",project.data.Name);
+//me.logger.log("getIterationsforProject");
+//me.logger.log("end date:",endDate);
+//me.logger.log("project:",project.data.Name);
 
       var iteration_config = {
             model: 'Iteration',
@@ -177,7 +175,7 @@ me.logger.log("project:",project.data.Name);
                 });
                 Deft.Chain.sequence(promises, this).then ({
                     success: function(record) {
-me.logger.log("chain record",record);
+//me.logger.log("chain record",record);
 
                     iterAccept.push(record);
                     iterAccept = Ext.Array.flatten(iterAccept);
@@ -193,13 +191,11 @@ me.logger.log("chain record",record);
                         drecord["Iteration -" + i + " Do"] = iterAccept[i].data.CardEstimateTotal;
                         drecord["Iteration -" + i + " Say/Do"] = iterations[i].data.PlanEstimate > 0 ? Math.round((iterAccept[i].data.CardEstimateTotal/iterations[i].data.PlanEstimate)*100) + "%" : "N/A";
                     }
-me.logger.log("record",drecord);
+//me.logger.log("record",drecord);
 
                 deferred.resolve(drecord);
-me.logger.log("iteration flow records:",iterAccept);
-me.logger.log("record",drecord);
-//            me.exportRecords.push(drecord);
-//            me.gridRecords.push(drecord);
+//me.logger.log("iteration flow records:",iterAccept);
+//me.logger.log("record",drecord);
 
                   },
                   failure: function(error_message){
@@ -214,8 +210,6 @@ me.logger.log("record",drecord);
               }
               }).always(function() {
               });
-//            me.exportRecords.push(drecord);
-//            me.gridRecords.push(drecord);
 
       return deferred.promise;
     },
@@ -225,7 +219,7 @@ me.logger.log("record",drecord);
       var me = this;
       var deferred = Ext.create("Deft.Deferred");
 
-me.logger.log("getIterationFlow", iteration);
+//me.logger.log("getIterationFlow", iteration);
       var iteration_config = {
             model: 'IterationCumulativeFlowData',
             fetch: [
@@ -252,7 +246,7 @@ me.logger.log("getIterationFlow", iteration);
         me._loadWsapiRecords(iteration_config).then({
               scope: this,
               success: function(record) {
-me.logger.log("flow record",record);
+//me.logger.log("flow record",record);
               deferred.resolve(record);
               },
               failure: function(error_message){
@@ -298,7 +292,7 @@ me.logger.log("flow record",record);
         var store = Ext.create('Rally.data.custom.Store',{
             data: records
         });
-me.logger.log("records",records);
+//me.logger.log("records",records);
         var cols = Ext.Array.map(field_names, function(name){
             return { dataIndex: name, text: name, flex: 1 };
         });
@@ -320,10 +314,10 @@ me.logger.log("records",records);
         this.export_columns = export_cols;
         this.gridRows = records;
 
-me.logger.log("erecord",this.export_columns);
-me.logger.log("grecord",this.gridRows);
+//me.logger.log("erecord",this.export_columns);
+//me.logger.log("grecord",this.gridRows);
 
-me.logger.log("columns",cols);
+//me.logger.log("columns",cols);
         this.down('#grid_box1').add({
             xtype: 'rallygrid',
             store: store,
@@ -334,8 +328,8 @@ me.logger.log("columns",cols);
     },
 
     _export: function(){
-this.logger.log("erecord2",this.export_columns);
-this.logger.log("grecord2",this.gridRows);
+//this.logger.log("erecord2",this.export_columns);
+//this.logger.log("grecord2",this.gridRows);
         var file_util = Ext.create('Rally.technicalservices.FileUtilities',{});
         var csv = file_util.convertDataArrayToCSVText(this.gridRows, this.export_columns);
         var export_file_name = "Iteration Metrics - " + this.endDate + ".csv"
