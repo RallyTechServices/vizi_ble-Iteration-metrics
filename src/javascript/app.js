@@ -60,6 +60,7 @@ Ext.define("CArABU.app.IterMet", {
 
     _getValidProjects: function() {
         var me = this;
+me.logger.log("getValidProjects");
         this.setLoading("Loading Projects...");
 
         var project_config = {
@@ -90,6 +91,7 @@ Ext.define("CArABU.app.IterMet", {
         var promises = [];
         var records = [];
 
+me.logger.log("getIterations");
         Ext.Array.each(projects, function(project) {
           promises.push(function() {
             return me._getIterationsforProject(project);
@@ -101,7 +103,7 @@ Ext.define("CArABU.app.IterMet", {
             records.push(record);
             records = Ext.Array.flatten(records);
 
-//me.logger.log("iteration get records:",records);
+me.logger.log("iteration get records:",records);
 //                var fields = ['Team Name','Last Iteration Say','Iteration -1 Say','Iteration -2 Say','Iteration -3 Say','Iteration -4 Say','Iteration -5 Say'];
 //                me._displayGridGivenRecords(records,fields);
         var fields = [
@@ -128,8 +130,9 @@ Ext.define("CArABU.app.IterMet", {
       var me = this;
       var endDate = Rally.util.DateTime.toIsoString(Rally.util.DateTime.add(this.down('#end_date').getValue(),'day',1),true);
       this.endDate = endDate;
-//me.logger.log("end date:",endDate);
-//me.logger.log("project:",project.data.Name);
+me.logger.log("getIterationsforProject");
+me.logger.log("end date:",endDate);
+me.logger.log("project:",project.data.Name);
 
       var iteration_config = {
             model: 'Iteration',
@@ -174,6 +177,7 @@ Ext.define("CArABU.app.IterMet", {
                 });
                 Deft.Chain.sequence(promises, this).then ({
                     success: function(record) {
+me.logger.log("chain record",record);
 
                     iterAccept.push(record);
                     iterAccept = Ext.Array.flatten(iterAccept);
@@ -189,10 +193,11 @@ Ext.define("CArABU.app.IterMet", {
                         drecord["Iteration -" + i + " Do"] = iterAccept[i].data.CardEstimateTotal;
                         drecord["Iteration -" + i + " Say/Do"] = iterations[i].data.PlanEstimate > 0 ? Math.round((iterAccept[i].data.CardEstimateTotal/iterations[i].data.PlanEstimate)*100) + "%" : "N/A";
                     }
+me.logger.log("record",drecord);
 
                 deferred.resolve(drecord);
-//me.logger.log("iteration flow records:",iterAccept);
-//me.logger.log("record",drecord);
+me.logger.log("iteration flow records:",iterAccept);
+me.logger.log("record",drecord);
 //            me.exportRecords.push(drecord);
 //            me.gridRecords.push(drecord);
 
@@ -220,6 +225,7 @@ Ext.define("CArABU.app.IterMet", {
       var me = this;
       var deferred = Ext.create("Deft.Deferred");
 
+me.logger.log("getIterationFlow", iteration);
       var iteration_config = {
             model: 'IterationCumulativeFlowData',
             fetch: [
@@ -237,12 +243,16 @@ Ext.define("CArABU.app.IterMet", {
             sorters: [
                 {property:'CreationDate', direction:'DESC'}
                 ],
+              context: {
+                project: null
+              }
+
         };
 
         me._loadWsapiRecords(iteration_config).then({
               scope: this,
               success: function(record) {
-
+me.logger.log("flow record",record);
               deferred.resolve(record);
               },
               failure: function(error_message){
@@ -288,7 +298,7 @@ Ext.define("CArABU.app.IterMet", {
         var store = Ext.create('Rally.data.custom.Store',{
             data: records
         });
-//me.logger.log("records",records);
+me.logger.log("records",records);
         var cols = Ext.Array.map(field_names, function(name){
             return { dataIndex: name, text: name, flex: 1 };
         });
@@ -313,7 +323,7 @@ Ext.define("CArABU.app.IterMet", {
 me.logger.log("erecord",this.export_columns);
 me.logger.log("grecord",this.gridRows);
 
-//me.logger.log("columns",cols);
+me.logger.log("columns",cols);
         this.down('#grid_box1').add({
             xtype: 'rallygrid',
             store: store,
