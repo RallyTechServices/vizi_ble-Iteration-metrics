@@ -61,6 +61,7 @@ Ext.define("CArABU.app.IterMet", {
     _getValidProjects: function() {
         var me = this;
 //me.logger.log("getValidProjects");
+        if ( this.down('#grid_box1') ) { this.down('#grid_box1').removeAll(); }
         this.setLoading("Loading Projects...");
 
         var project_config = {
@@ -139,6 +140,7 @@ Ext.define("CArABU.app.IterMet", {
                 'ObjectID',
                 'StartDate',
                 'EndDate',
+                'PlannedVelocity',
                 'PlanEstimate',
                 'Project',
                 ],
@@ -185,11 +187,13 @@ Ext.define("CArABU.app.IterMet", {
                         "Last Iteration Say": iterations[0].data.PlanEstimate,
                         "Last Iteration Do": iterAccept[0].data.CardEstimateTotal,
                         "Last Iteration Say/Do":  iterations[0].data.PlanEstimate > 0 ? Math.round((iterAccept[0].data.CardEstimateTotal/iterations[0].data.PlanEstimate)*100) + "%" : "N/A",
+                        "Last Iteration PV":  iterations[0].data.PlannedVelocity,
                     };
                     for (var i = 1;  i < numgot; i++) {
                         drecord["Iteration -" + i + " Say"] = iterations[i].data.PlanEstimate;
                         drecord["Iteration -" + i + " Do"] = iterAccept[i].data.CardEstimateTotal;
                         drecord["Iteration -" + i + " Say/Do"] = iterations[i].data.PlanEstimate > 0 ? Math.round((iterAccept[i].data.CardEstimateTotal/iterations[i].data.PlanEstimate)*100) + "%" : "N/A";
+                        drecord["Iteration -" + i + " PV"] = iterations[i].data.PlannedVelocity;
                     }
 //me.logger.log("record",drecord);
 
@@ -298,18 +302,30 @@ Ext.define("CArABU.app.IterMet", {
         });
         var export_cols = {
              'Team Name':'Team Name',
-             'Last Iteration Say': 'Last Iteration Say',
-             'Last Iteration Do': 'Last Iteration Do',
-             'Iteration -1 Say': 'Iteration -1 Say',
-             'Iteration -1 Do': 'Iteration -1 Do',
-             'Iteration -2 Say': 'Iteration -2 Say',
-             'Iteration -2 Do': 'Iteration -2 Do',
-             'Iteration -3 Say': 'Iteration -3 Say',
-             'Iteration -3 Do': 'Iteration -3 Do',
-             'Iteration -4 Say': 'Iteration -4 Say',
-             'Iteration -4 Do': 'Iteration -4 Do',
-             'Iteration -5 Say': 'Iteration -5 Say',
-             'Iteration -5 Do': 'Iteration -5 Do'
+             'Last Iteration PV': 'Last Iter. PV',
+             'Last Iteration Say': 'Last Iter. PE',
+             'Last Iteration Do': 'Last Iter. Acc.',
+             'Last Iteration Say/Do': 'Last Iter. Say/Do',
+             'Iteration -1 PV': 'Iter. -1 PV',
+             'Iteration -1 Say': 'Iter. -1 PE',
+             'Iteration -1 Do': 'Iter. -1 Acc.',
+             'Iteration -1 Say/Do': 'Iter. -1 Say/Do',
+             'Iteration -2 PV': 'Iter. -2 PV',
+             'Iteration -2 Say': 'Iter. -2 PE',
+             'Iteration -2 Do': 'Iter. -2 Acc.',
+             'Iteration -2 Say/Do': 'Iter. -2 Say/Do',
+             'Iteration -3 PV': 'Iter. -3 PV',
+             'Iteration -3 Say': 'Iter. -3 PE',
+             'Iteration -3 Do': 'Iter. -3 Acc.',
+             'Iteration -3 Say/Do': 'Iter. -3 Say/Do',
+             'Iteration -4 PV': 'Iter. -4 PV',
+             'Iteration -4 Say': 'Iter. -4 PE',
+             'Iteration -4 Do': 'Iter. -4 Acc.',
+             'Iteration -4 Say/Do': 'Iter. -4 Say/Do',
+             'Iteration -5 PV': 'Iter. -5 PV',
+             'Iteration -5 Say': 'Iter. -5 PE',
+             'Iteration -5 Do': 'Iter. -5 Acc.',
+             'Iteration -5 Say/Do': 'Iter. -5 Say/Do',
         };
         this.export_columns = export_cols;
         this.gridRows = records;
