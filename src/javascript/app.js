@@ -178,9 +178,10 @@ Ext.define("CArABU.app.IterMet", {
                 Deft.Chain.sequence(promises, this).then ({
                     success: function(record) {
 //me.logger.log("chain record",record);
-
+//                if (record.length > 0) {return;}
                     iterAccept.push(record);
                     iterAccept = Ext.Array.flatten(iterAccept);
+//me.logger.log("flatten record",iterAccept, iterAccept.length);
 
                     drecord = {
                         "Team Name": iterations[0].data.Project.Name,
@@ -189,7 +190,9 @@ Ext.define("CArABU.app.IterMet", {
                         "Last Iteration Say/Do":  iterations[0].data.PlanEstimate > 0 ? Math.round((iterAccept[0].data.CardEstimateTotal/iterations[0].data.PlanEstimate)*100) + "%" : "N/A",
                         "Last Iteration PV":  iterations[0].data.PlannedVelocity,
                     };
-                    for (var i = 1;  i < numgot; i++) {
+//                    for (var i = 1;  i < numgot; i++) {
+                    for (var i = 1;  i < iterAccept.length; i++) {
+//me.logger.log("drecord",iterAccept, iterations[0], iterations[i], i);
                         drecord["Iteration -" + i + " Say"] = iterations[i].data.PlanEstimate;
                         drecord["Iteration -" + i + " Do"] = iterAccept[i].data.CardEstimateTotal;
                         drecord["Iteration -" + i + " Say/Do"] = iterations[i].data.PlanEstimate > 0 ? Math.round((iterAccept[i].data.CardEstimateTotal/iterations[i].data.PlanEstimate)*100) + "%" : "N/A";
@@ -250,7 +253,7 @@ Ext.define("CArABU.app.IterMet", {
         me._loadWsapiRecords(iteration_config).then({
               scope: this,
               success: function(record) {
-//me.logger.log("flow record",record);
+me.logger.log("flow record",record);
               deferred.resolve(record);
               },
               failure: function(error_message){
