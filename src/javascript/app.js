@@ -66,7 +66,7 @@ Ext.define("CArABU.app.IterMet", {
 
         var project_config = {
             model: 'Project',
-            fetch: ['Name','ObjectID'],
+            fetch: ['Name','ObjectID','c_TeamProgram'],
             filters: [
               {property:"c_IncludeinMonthlyReport", operator: '=', value: true}
             ],
@@ -107,6 +107,7 @@ Ext.define("CArABU.app.IterMet", {
 //me.logger.log("iteration get records:",records);
         var fields = [
             'Team Name',
+            'Portfolio',
             'Last Iteration Say/Do',
             'Iteration -1 Say/Do',
             'Iteration -2 Say/Do',
@@ -143,6 +144,7 @@ Ext.define("CArABU.app.IterMet", {
                 'PlannedVelocity',
                 'PlanEstimate',
                 'Project',
+                'c_TeamProgram'
                 ],
             filters: [
               {property:'EndDate', operator: '<=', value: endDate},
@@ -185,9 +187,10 @@ Ext.define("CArABU.app.IterMet", {
 
                     drecord = {
                         "Team Name": iterations[0].data.Project.Name,
+                        "Portfolio": iterations[0].data.Project.c_TeamProgram,
                         "Last Iteration Say": iterations[0].data.PlanEstimate,
                         "Last Iteration Do": iterAccept[0].data.CardEstimateTotal,
-                        "Last Iteration Say/Do":  iterations[0].data.PlanEstimate > 0 ? Math.round((iterAccept[0].data.CardEstimateTotal/iterations[0].data.PlanEstimate)*100) + "%" : "N/A",
+                        "Last Iteration Say/Do":  iterations[0].data.PlannedVelocity > 0 ? Math.round((iterAccept[0].data.CardEstimateTotal/iterations[0].data.PlannedVelocity)*100) + "%" : "N/A",
                         "Last Iteration PV":  iterations[0].data.PlannedVelocity,
                     };
 //                    for (var i = 1;  i < numgot; i++) {
@@ -195,7 +198,7 @@ Ext.define("CArABU.app.IterMet", {
 //me.logger.log("drecord",iterAccept, iterations[0], iterations[i], i);
                         drecord["Iteration -" + i + " Say"] = iterations[i].data.PlanEstimate;
                         drecord["Iteration -" + i + " Do"] = iterAccept[i].data.CardEstimateTotal;
-                        drecord["Iteration -" + i + " Say/Do"] = iterations[i].data.PlanEstimate > 0 ? Math.round((iterAccept[i].data.CardEstimateTotal/iterations[i].data.PlanEstimate)*100) + "%" : "N/A";
+                        drecord["Iteration -" + i + " Say/Do"] = iterations[i].data.PlannedVelocity > 0 ? Math.round((iterAccept[i].data.CardEstimateTotal/iterations[i].data.PlannedVelocity)*100) + "%" : "N/A";
                         drecord["Iteration -" + i + " PV"] = iterations[i].data.PlannedVelocity;
                     }
 //me.logger.log("record",drecord);
@@ -253,7 +256,7 @@ Ext.define("CArABU.app.IterMet", {
         me._loadWsapiRecords(iteration_config).then({
               scope: this,
               success: function(record) {
-me.logger.log("flow record",record);
+//me.logger.log("flow record",record);
               deferred.resolve(record);
               },
               failure: function(error_message){
@@ -305,6 +308,7 @@ me.logger.log("flow record",record);
         });
         var export_cols = {
              'Team Name':'Team Name',
+             'Portfolio': 'Portfolio',
              'Last Iteration PV': 'Last Iter. PV',
              'Last Iteration Say': 'Last Iter. PE',
              'Last Iteration Do': 'Last Iter. Acc.',
