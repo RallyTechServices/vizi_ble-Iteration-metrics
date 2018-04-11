@@ -60,7 +60,7 @@ Ext.define("CArABU.app.IterMet", {
 
     _getValidProjects: function() {
         var me = this;
-//me.logger.log("getValidProjects");
+me.logger.log("getValidProjects");
         if ( this.down('#grid_box1') ) { this.down('#grid_box1').removeAll(); }
         this.setLoading("Loading Projects...");
 
@@ -92,7 +92,7 @@ Ext.define("CArABU.app.IterMet", {
         var promises = [];
         var records = [];
 
-//me.logger.log("getIterations");
+me.logger.log("getIterations");
         Ext.Array.each(projects, function(project) {
           promises.push(function() {
             return me._getIterationsforProject(project);
@@ -104,7 +104,7 @@ Ext.define("CArABU.app.IterMet", {
             records.push(record);
             records = Ext.Array.flatten(records);
 
-//me.logger.log("iteration get records:",records);
+me.logger.log("iteration get records:",records);
         var fields = [
             'Team Name',
             'Portfolio',
@@ -130,9 +130,9 @@ Ext.define("CArABU.app.IterMet", {
       var me = this;
       var endDate = Rally.util.DateTime.toIsoString(Rally.util.DateTime.add(this.down('#end_date').getValue(),'day',1),true);
       this.endDate = endDate;
-//me.logger.log("getIterationsforProject");
-//me.logger.log("end date:",endDate);
-//me.logger.log("project:",project.data.Name);
+me.logger.log("getIterationsforProject");
+me.logger.log("end date:",endDate);
+me.logger.log("project:",project.data.Name);
 
       var iteration_config = {
             model: 'Iteration',
@@ -179,33 +179,33 @@ Ext.define("CArABU.app.IterMet", {
                 });
                 Deft.Chain.sequence(promises, this).then ({
                     success: function(record) {
-//me.logger.log("chain record",record);
+me.logger.log("chain record",record);
 //                if (record.length > 0) {return;}
                     iterAccept.push(record);
                     iterAccept = Ext.Array.flatten(iterAccept);
-//me.logger.log("flatten record",iterAccept, iterAccept.length);
+me.logger.log("flatten record",iterAccept, iterAccept.length);
 
                     drecord = {
                         "Team Name": iterations[0].data.Project.Name,
                         "Portfolio": iterations[0].data.Project.c_TeamProgram,
                         "Last Iteration Say": iterations[0].data.PlanEstimate,
-                        "Last Iteration Do": iterAccept[0].data.CardEstimateTotal,
+                        "Last Iteration Do": iterAccept.length > 0 ? iterAccept[0].data.CardEstimateTotal : " ",
                         "Last Iteration Say/Do":  iterations[0].data.PlannedVelocity > 0 ? Math.round((iterAccept[0].data.CardEstimateTotal/iterations[0].data.PlannedVelocity)*100) + "%" : "N/A",
                         "Last Iteration PV":  iterations[0].data.PlannedVelocity,
                     };
 //                    for (var i = 1;  i < numgot; i++) {
                     for (var i = 1;  i < iterAccept.length; i++) {
-//me.logger.log("drecord",iterAccept, iterations[0], iterations[i], i);
+me.logger.log("drecord",iterAccept, iterations[0], iterations[i], i);
                         drecord["Iteration -" + i + " Say"] = iterations[i].data.PlanEstimate;
-                        drecord["Iteration -" + i + " Do"] = iterAccept[i].data.CardEstimateTotal;
+                        drecord["Iteration -" + i + " Do"] = iterAccept.length > 0 ? iterAccept[i].data.CardEstimateTotal : " ";
                         drecord["Iteration -" + i + " Say/Do"] = iterations[i].data.PlannedVelocity > 0 ? Math.round((iterAccept[i].data.CardEstimateTotal/iterations[i].data.PlannedVelocity)*100) + "%" : "N/A";
                         drecord["Iteration -" + i + " PV"] = iterations[i].data.PlannedVelocity;
                     }
-//me.logger.log("record",drecord);
+me.logger.log("record",drecord);
 
                 deferred.resolve(drecord);
-//me.logger.log("iteration flow records:",iterAccept);
-//me.logger.log("record",drecord);
+me.logger.log("iteration flow records:",iterAccept);
+me.logger.log("record",drecord);
 
                   },
                   failure: function(error_message){
@@ -229,7 +229,7 @@ Ext.define("CArABU.app.IterMet", {
       var me = this;
       var deferred = Ext.create("Deft.Deferred");
 
-//me.logger.log("getIterationFlow", iteration);
+me.logger.log("getIterationFlow", iteration);
       var iteration_config = {
             model: 'IterationCumulativeFlowData',
             fetch: [
@@ -256,7 +256,7 @@ Ext.define("CArABU.app.IterMet", {
         me._loadWsapiRecords(iteration_config).then({
               scope: this,
               success: function(record) {
-//me.logger.log("flow record",record);
+me.logger.log("flow record",record);
               deferred.resolve(record);
               },
               failure: function(error_message){
@@ -302,7 +302,7 @@ Ext.define("CArABU.app.IterMet", {
         var store = Ext.create('Rally.data.custom.Store',{
             data: records
         });
-//me.logger.log("records",records);
+me.logger.log("records",records);
         var cols = Ext.Array.map(field_names, function(name){
             return { dataIndex: name, text: name, flex: 1 };
         });
@@ -337,10 +337,10 @@ Ext.define("CArABU.app.IterMet", {
         this.export_columns = export_cols;
         this.gridRows = records;
 
-//me.logger.log("erecord",this.export_columns);
-//me.logger.log("grecord",this.gridRows);
+me.logger.log("erecord",this.export_columns);
+me.logger.log("grecord",this.gridRows);
 
-//me.logger.log("columns",cols);
+me.logger.log("columns",cols);
         this.down('#grid_box1').add({
             xtype: 'rallygrid',
             store: store,
