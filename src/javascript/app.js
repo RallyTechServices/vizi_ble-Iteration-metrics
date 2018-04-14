@@ -166,17 +166,27 @@ Ext.define("CArABU.app.IterMet", {
               success: function(iterations) {
                 var promises = [];
                 var iterAccept = [];
-                var drecord = {};
+                var drecord = {
+                    "Team Name": project.data.Name,
+                    "Portfolio": project.data.c_TeamProgram,
+                    "Last Iteration Say": " ",
+                    "Last Iteration Do":  " ",
+                    "Last Iteration Say/Do":  " ",
+                    "Last Iteration PV":  " ",
+
+                    };
+//me.logger.log("iteration records:",iterations,iterations.length);
 
                 var numgot = iterations.length;
 
-                if (numgot == 0) {drecord = {};}
+                if (numgot == 0) {deferred.resolve(drecord);}
+                if (numgot > 0) {
 
-                Ext.Array.each(iterations, function(iteration) {
-                      promises.push(function() {
-                        return me._getIterationFlow(iteration);
-                      });
-                });
+                    Ext.Array.each(iterations, function(iteration) {
+                          promises.push(function() {
+                            return me._getIterationFlow(iteration);
+                          });
+                    });
                 Deft.Chain.sequence(promises, this).then ({
                     success: function(record) {
 //me.logger.log("chain record",record);
@@ -212,7 +222,8 @@ Ext.define("CArABU.app.IterMet", {
                       alert(error_message);
                   }
                 });
-
+               }
+//~~~~
               },
 
               failure: function(error_message){
